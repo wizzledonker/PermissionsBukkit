@@ -62,7 +62,7 @@ public final class PermissionsPlugin extends JavaPlugin {
         }
 
         // How are you gentlemen
-        int count = getServer().getOnlinePlayers().length;
+        int count = getServer().getOnlinePlayers().size();
         if (count > 0) {
             getLogger().info("Enabled successfully, " + count + " online players registered");
         } else {
@@ -155,7 +155,7 @@ public final class PermissionsPlugin extends JavaPlugin {
         }
 
         // Good day to you! I said good day!
-        int count = getServer().getOnlinePlayers().length;
+        int count = getServer().getOnlinePlayers().size();
         if (count > 0) {
             getLogger().info("Disabled successfully, " + count + " online players unregistered");
         }
@@ -193,7 +193,7 @@ public final class PermissionsPlugin extends JavaPlugin {
         metrics.apiUsed();
         ArrayList<Group> result = new ArrayList<Group>();
         ConfigurationSection node = getUsernameNode(playerName);
-        if (node != null) {
+        if (node != null && (!node.getString("groups").isEmpty())) {
             for (String key : node.getStringList("groups")) {
                 result.add(new Group(this, key));
             }
@@ -212,7 +212,7 @@ public final class PermissionsPlugin extends JavaPlugin {
     public List<Group> getGroups(UUID player) {
         metrics.apiUsed();
         ArrayList<Group> result = new ArrayList<Group>();
-        if (getNode("users/" + player) != null) {
+        if ((getNode("users/" + player) != null) && (!getNode("users/" + player).getStringList("groups").isEmpty())) {
             for (String key : getNode("users/" + player).getStringList("groups")) {
                 result.add(new Group(this, key));
             }
@@ -248,7 +248,7 @@ public final class PermissionsPlugin extends JavaPlugin {
      */
     public PermissionInfo getPlayerInfo(UUID player) {
         metrics.apiUsed();
-        if (getNode("users/" + player) == null) {
+        if (getNode("users/" + player + "/groups") == null) {
             return null;
         } else {
             return new PermissionInfo(this, getNode("users/" + player), "groups");
@@ -527,7 +527,7 @@ public final class PermissionsPlugin extends JavaPlugin {
         ConfigurationSection node = getUserNode(player);
 
         // if the player isn't in the config, act like they're in default
-        if (node == null) {
+        if (node == null || node.getStringList("groups").isEmpty()) {
             return calculateGroupPermissions("default", world);
         }
 
